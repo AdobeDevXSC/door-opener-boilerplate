@@ -13,7 +13,11 @@ import {
   loadCSS,
 } from './aem.js';
 
-const LCP_BLOCKS = []; // add your LCP blocks to the list
+const LCP_BLOCKS = [
+	'hero'
+]; // add your LCP blocks to the list
+
+
 
 /**
  * Builds hero block and prepends to main in a new section.
@@ -41,6 +45,27 @@ async function loadFonts() {
     // do nothing
   }
 }
+
+// /**
+//  * TODO: Update
+//  * @param {*} element
+//  * @param {*} href
+//  */
+// export function addVideo(element, href) {
+//   element.innerHTML = `<video loop muted playsInline>
+//     <source data-src="${href}" type="video/mp4" />
+//   </video>`;
+//   const video = element.querySelector('video');
+//   const source = element.querySelector('video > source');
+
+//   source.src = source.dataset.src;
+//   video.load();
+//   video.addEventListener('loadeddata', () => {
+//     video.setAttribute('autoplay', true);
+//     video.setAttribute('data-loaded', true);
+//     video.play();
+//   });
+// }
 
 /**
  * Builds all synthetic blocks in a container element.
