@@ -2,8 +2,8 @@
 
 
 ## Environments
-- Preview: https://main--door-opener-boilerplate--adobedevxsc.hlx.page/
-- Live: https://main--door-opener-boilerplate--adobedevxsc.hlx.live/
+- Preview: Preview: https://main--{repo}--{owner}.hlx.page/
+- Live: https://main--{repo}--{owner}.hlx.live/
 
 ## Installation
 
