@@ -131,6 +131,45 @@ export function createTag(tag, attributes, children) {
   }
 
 /**
+ * @param {*} element
+ * @param {*} href
+ */
+export function addVideo(element, href) {
+	element.innerHTML = `<video loop muted playsInline>
+	  <source data-src="${href}" type="video/mp4" />
+	</video>`;
+	const video = element.querySelector('video');
+	const source = element.querySelector('video > source');
+  
+	source.src = source.dataset.src;
+	video.load();
+	video.addEventListener('loadeddata', () => {
+	  video.setAttribute('autoplay', true);
+	  video.setAttribute('data-loaded', true);
+	  video.play();
+  });
+}
+
+
+export function makeVideo(element, href) {
+	element.innerHTML = `<video loop muted playsInline>
+	  <source data-src="${href}" type="video/mp4" />
+	</video>`;
+  
+	const video = element.querySelector('video');
+	const source = element.querySelector('video > source');
+  
+	source.src = source.dataset.src;
+	video.load();
+  
+	video.addEventListener('loadeddata', () => {
+	  video.setAttribute('autoplay', true);
+	  video.setAttribute('data-loaded', true);
+	  video.play();
+	});
+  }
+  
+/**
  * Builds hero block and prepends to main in a new section.
  * @param {Element} main The container element
  */
