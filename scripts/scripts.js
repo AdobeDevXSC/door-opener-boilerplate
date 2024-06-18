@@ -80,21 +80,38 @@ const AUDIENCES = {
 export function isBlockLibrary() {
 	return window.location.pathname.includes('block-library');
   }
-  
-  /**
-   * TODO: Update
-   * @param {*} element
-   * @param {*} href
-   */
-  export function addVideo(element, href) {
+
+/**
+ * @param {*} element
+ * @param {*} href
+ */
+export function addVideo(element, href) {
+	element.innerHTML = `<video loop muted playsInline>
+		<source data-src="${href}" type="video/mp4" />
+	</video>`;
+	const video = element.querySelector('video');
+	const source = element.querySelector('video > source');
+	
+	source.src = source.dataset.src;
+	video.load();
+	video.addEventListener('loadeddata', () => {
+		video.setAttribute('autoplay', true);
+		video.setAttribute('data-loaded', true);
+		video.play();
+	});
+}
+
+export function makeVideo(element, href) {
 	element.innerHTML = `<video loop muted playsInline>
 	  <source data-src="${href}" type="video/mp4" />
 	</video>`;
+  
 	const video = element.querySelector('video');
 	const source = element.querySelector('video > source');
   
 	source.src = source.dataset.src;
 	video.load();
+  
 	video.addEventListener('loadeddata', () => {
 	  video.setAttribute('autoplay', true);
 	  video.setAttribute('data-loaded', true);
@@ -130,45 +147,6 @@ export function createTag(tag, attributes, children) {
 	return element;
   }
 
-/**
- * @param {*} element
- * @param {*} href
- */
-export function addVideo(element, href) {
-	element.innerHTML = `<video loop muted playsInline>
-	  <source data-src="${href}" type="video/mp4" />
-	</video>`;
-	const video = element.querySelector('video');
-	const source = element.querySelector('video > source');
-  
-	source.src = source.dataset.src;
-	video.load();
-	video.addEventListener('loadeddata', () => {
-	  video.setAttribute('autoplay', true);
-	  video.setAttribute('data-loaded', true);
-	  video.play();
-  });
-}
-
-
-export function makeVideo(element, href) {
-	element.innerHTML = `<video loop muted playsInline>
-	  <source data-src="${href}" type="video/mp4" />
-	</video>`;
-  
-	const video = element.querySelector('video');
-	const source = element.querySelector('video > source');
-  
-	source.src = source.dataset.src;
-	video.load();
-  
-	video.addEventListener('loadeddata', () => {
-	  video.setAttribute('autoplay', true);
-	  video.setAttribute('data-loaded', true);
-	  video.play();
-	});
-  }
-  
 /**
  * Builds hero block and prepends to main in a new section.
  * @param {Element} main The container element
@@ -223,7 +201,6 @@ async function decorateTemplates(main) {
     console.error('Auto Blocking failed', error);
   }
 }
-
 
 function autolinkModals(element) {
 	element.addEventListener('click', async (e) => {
@@ -366,6 +343,7 @@ function aggregateTabSectionsIntoComponents(main) {
 async function loadEager(doc) {
 	document.documentElement.lang = 'en';
 	decorateTemplateAndTheme();
+	loadHeader(doc.querySelector('header'));
 
 	if (getMetadata('breadcrumbs').toLowerCase() === 'true') {
 	  document.body.classList.add('breadcrumbs-enabled');
@@ -447,7 +425,6 @@ async function loadLazy(doc) {
   const element = hash ? doc.getElementById(hash.substring(1)) : false;
   if (hash && element) element.scrollIntoView();
 
-  loadHeader(doc.querySelector('header'));
   loadFooter(doc.querySelector('footer'));
 
   loadCSS(`${window.hlx.codeBasePath}/styles/lazy-styles.css`);
@@ -470,6 +447,15 @@ await window.hlx.plugins.run('loadLazy', pluginContext);
   // eslint-disable-next-line import/no-relative-packages
   const { initConversionTracking } = await import('../plugins/rum-conversion/src/index.js');
   await initConversionTracking.call(context, document);
+
+  	// Add below snippet at the end of the lazy phase
+	if ((getMetadata('experiment')
+		|| Object.keys(getAllMetadata('campaign')).length
+		|| Object.keys(getAllMetadata('audience')).length)) {
+		// eslint-disable-next-line import/no-relative-packages
+		const { loadLazy: runLazy } = await import('../plugins/experimentation/src/index.js');
+		await runLazy(document, { audiences: AUDIENCES }, pluginContext);
+	}
 }
 
 /**
@@ -591,10 +577,12 @@ export function addAnchorLink(elem) {
 	return element;
   }
 
-async function loadPage() {
-  await loadEager(document);
-  await loadLazy(document);
-  loadDelayed();
+  async function loadPage() {
+	await window.hlx.plugins.load('eager', pluginContext);
+	await loadEager(document);
+	await window.hlx.plugins.load('lazy', pluginContext);
+	await loadLazy(document);
+	loadDelayed();
 }
 
 loadPage();
